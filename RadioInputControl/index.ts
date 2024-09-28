@@ -1,53 +1,98 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 
 export class RadioInputControl implements ComponentFramework.StandardControl<IInputs, IOutputs> {
+    private context: ComponentFramework.Context<IInputs>;
+    private radioGroup: HTMLDivElement;
+    private yesRadio: HTMLInputElement;
+    private noRadio: HTMLInputElement;
+    private value: number | undefined;
 
-    /**
-     * Empty constructor.
-     */
+    private notifyOutputChanged: () => void;
+
     constructor()
     {
 
     }
 
-    /**
-     * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
-     * Data-set values are not initialized here, use updateView.
-     * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to property names defined in the manifest, as well as utility functions.
-     * @param notifyOutputChanged A callback method to alert the framework that the control has new outputs ready to be retrieved asynchronously.
-     * @param state A piece of data that persists in one session for a single user. Can be set at any point in a controls life cycle by calling 'setControlState' in the Mode interface.
-     * @param container If a control is marked control-type='standard', it will receive an empty div element within which it can render its content.
-     */
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container:HTMLDivElement): void
     {
-        // Add control initialization code
+        this.context = context;
+        this.radioGroup = document.createElement("div");
+
+        // Build Yes radio button
+        this.yesRadio = document.createElement("input");
+        this.yesRadio.type = "radio";
+        this.yesRadio.name = "radioOptions";
+        this.yesRadio.value = "1";
+        this.yesRadio.id = "yesRadio";
+        this.yesRadio.onclick = () => this.onRadioChange(1);
+        this.yesRadio.checked = false;
+
+        const yesLabel = document.createElement("label");
+        yesLabel.htmlFor = "yesRadio";
+        yesLabel.appendChild(document.createTextNode("Yes"));
+
+        // Build No radio button
+        this.noRadio = document.createElement("input");
+        this.noRadio.type = "radio";
+        this.noRadio.name = "radioOptions";
+        this.noRadio.value = "0";
+        this.noRadio.id = "noRadio";
+        this.noRadio.onclick = () => this.onRadioChange(0);
+
+        const noLabel = document.createElement("label");
+        noLabel.htmlFor = "noRadio";
+        noLabel.appendChild(document.createTextNode("No"));
+
+        // Add radio buttons to the radio group
+        this.radioGroup.appendChild(this.yesRadio);
+        this.radioGroup.appendChild(yesLabel);
+        this.radioGroup.appendChild(this.noRadio);
+        this.radioGroup.appendChild(noLabel);
+
+        this.initializeRadioButtons();
+
+        // Append the radio group to the container
+        container.appendChild(this.radioGroup);
+        this.notifyOutputChanged = notifyOutputChanged;
     }
 
-
-    /**
-     * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
-     * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
-     */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
-        // Add code to update control view
+
     }
 
-    /**
-     * It is called by the framework prior to a control receiving new data.
-     * @returns an object based on nomenclature defined in manifest, expecting object[s] for property marked as "bound" or "output"
-     */
     public getOutputs(): IOutputs
     {
-        return {};
+        console.log("getOutputs: ", this.value);        
+        return {
+            controlValue: this.value
+        };
     }
 
-    /**
-     * Called when the control is to be removed from the DOM tree. Controls should use this call for cleanup.
-     * i.e. cancelling any pending remote calls, removing listeners, etc.
-     */
     public destroy(): void
     {
-        // Add code to cleanup control if necessary
+        
+    }
+
+    private initializeRadioButtons(): void {
+        if (this.context.parameters.controlValue.raw !== undefined) {
+            const initialValue = this.context.parameters.controlValue.raw;
+
+            if (initialValue === 1) {
+                this.yesRadio.checked = true;
+                this.value = 1;
+            } else if (initialValue === 0) {
+                this.noRadio.checked = true;
+                this.value = 0;
+            } else {
+                this.value = undefined;
+            }
+        }
+    }
+
+    private onRadioChange(value: number): void {
+        this.value = value;
+        this.notifyOutputChanged();
     }
 }

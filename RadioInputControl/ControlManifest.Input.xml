@@ -7,19 +7,16 @@
              description-key="Radio Input Control Desc"
              control-type="standard">
         <external-service-usage enabled="false" />
-        <type-group name="numbers">
-            <type>Whole.None</type>
-        </type-group>
         <property name="controlValue"
                   display-name-key="Radio Value"
                   description-key="Yes / No Control Value"
-                  of-type="numbers"
+                  of-type="Whole.None"
                   usage="bound"
                   required="true" />
         <resources>
             <code path="index.ts"
                   order="1" />
-            <css path="css/index.css"
+            <css path="index.css"
                  order="1" />
         </resources>
     </control>
